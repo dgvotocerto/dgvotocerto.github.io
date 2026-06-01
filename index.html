@@ -6,6 +6,15 @@
   <title>Danilo Gomes · Sistema Eleitoral</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/dist/tabler-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    #map-container { height: 400px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-top: 1rem; }
+    .cep-wrap { position: relative; }
+    .cep-wrap input { padding-right: 40px; }
+    .cep-loading { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; display: none; }
+    .map-pin-info { background: #fff; border-radius: 8px; padding: 1rem; border: 1px solid var(--border); margin-top: 1rem; font-size: 13px; display: none; }
+    .map-pin-info strong { display: block; font-size: 14px; margin-bottom: 4px; }
+  </style>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -255,6 +264,7 @@
     <button class="tab-btn" onclick="showTab('tab-eleitores', this)"><i class="ti ti-users"></i> Eleitores</button>
     <button class="tab-btn" onclick="showTab('tab-novo-eleitor', this)"><i class="ti ti-user-plus"></i> Novo eleitor</button>
     <button class="tab-btn admin-only" onclick="showTab('tab-assessores', this)" style="display:none"><i class="ti ti-id-badge"></i> Assessores</button>
+    <button class="tab-btn" onclick="showTab('tab-mapa', this)"><i class="ti ti-map"></i> Mapa</button>
     <button class="tab-btn" onclick="showTab('tab-perfil', this)"><i class="ti ti-settings"></i> Minha conta</button>
   </div>
 
@@ -385,16 +395,57 @@
       </div>
 
       <div class="form-section">
-        <h3><i class="ti ti-home"></i> Endereço</h3>
+        <h3><i class="ti ti-home"></i> Endereço de residência</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>CEP</label>
+            <div class="cep-wrap">
+              <input type="text" id="e-cep" placeholder="00000-000" oninput="maskCEP(this); buscarCEP()" maxlength="9">
+              <i class="ti ti-loader-2 cep-loading" id="cep-loading"></i>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Cidade</label>
+            <input type="text" id="e-cidade" placeholder="Preenchido pelo CEP">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Rua / Logradouro</label>
+            <input type="text" id="e-rua" placeholder="Preenchido pelo CEP">
+          </div>
+          <div class="form-group">
+            <label>Número</label>
+            <input type="text" id="e-numero" placeholder="Ex: 123">
+          </div>
+        </div>
         <div class="form-row">
           <div class="form-group">
             <label>Bairro onde reside</label>
-            <input type="text" id="e-bairro-reside" placeholder="Bairro de residência">
+            <input type="text" id="e-bairro-reside" placeholder="Preenchido pelo CEP">
           </div>
+          <div class="form-group">
+            <label>Complemento</label>
+            <input type="text" id="e-complemento" placeholder="Apto, bloco, etc.">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3><i class="ti ti-map-2"></i> Local de votação</h3>
+        <div class="form-row">
           <div class="form-group">
             <label>Bairro onde vota</label>
             <input type="text" id="e-bairro-vota" placeholder="Bairro do colégio eleitoral">
           </div>
+          <div class="form-group">
+            <label>Endereço do colégio eleitoral</label>
+            <input type="text" id="e-endereco-colegio" placeholder="Ex: Rua das Flores, 100" oninput="debounceMapColegio()">
+          </div>
+        </div>
+        <div id="map-colegio-wrap" style="display:none">
+          <div class="map-pin-info" id="map-pin-info"></div>
+          <div id="map-container"></div>
         </div>
       </div>
 
@@ -437,6 +488,20 @@
             <thead><tr><th>Nome</th><th>Login</th><th>E-mail</th><th>Telefone</th><th>Status</th><th>Ações</th></tr></thead>
             <tbody id="assessores-tbody"></tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAPA -->
+    <div id="tab-mapa" class="tab-content" style="display:none">
+      <div class="page-title"><i class="ti ti-map"></i> <span>Mapa</span> de eleitores</div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Locais de votação cadastrados</h3>
+          <span style="font-size:13px;color:var(--text-muted)" id="mapa-count">0 locais</span>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div id="map-geral" style="height:500px;border-radius:0 0 12px 12px"></div>
         </div>
       </div>
     </div>
@@ -523,6 +588,7 @@ function showTab(id, btn) {
   if (id === 'tab-eleitores') loadEleitores();
   if (id === 'tab-assessores') loadAssessores();
   if (id === 'tab-painel') loadPainel();
+  if (id === 'tab-mapa') loadMapaGeral();
 }
 
 async function doLogin() {
@@ -663,6 +729,14 @@ async function salvarEleitor() {
     secao: document.getElementById('e-secao').value || null,
     bairro_reside: document.getElementById('e-bairro-reside').value || null,
     bairro_vota: document.getElementById('e-bairro-vota').value || null,
+    cep: document.getElementById('e-cep').value || null,
+    rua: document.getElementById('e-rua').value || null,
+    numero: document.getElementById('e-numero').value || null,
+    complemento: document.getElementById('e-complemento').value || null,
+    cidade: document.getElementById('e-cidade').value || null,
+    endereco_colegio: document.getElementById('e-endereco-colegio').value || null,
+    lat_colegio: window._colegioLat || null,
+    lng_colegio: window._colegioLng || null,
     observacoes: document.getElementById('e-obs').value || null,
     tipo: tipoSelecionado,
     assessor_id: currentUser?.id
@@ -679,13 +753,20 @@ async function salvarEleitor() {
 }
 
 function limparFormEleitor() {
-  ['e-cpf','e-nome','e-tel','e-email','e-titulo','e-colegio','e-zona','e-secao','e-bairro-reside','e-bairro-vota','e-obs'].forEach(id => document.getElementById(id).value = '');
+  ['e-cpf','e-nome','e-tel','e-email','e-titulo','e-colegio','e-zona','e-secao',
+   'e-bairro-reside','e-bairro-vota','e-obs','e-cep','e-rua','e-numero',
+   'e-complemento','e-cidade','e-endereco-colegio'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
   document.getElementById('e-municipio').value = 'Guarulhos';
   document.getElementById('e-tipo').value = 'eleitor';
   tipoSelecionado = 'eleitor';
   document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
   document.querySelector('.tipo-btn').classList.add('active');
   document.getElementById('cpf-status').textContent = '';
+  document.getElementById('map-colegio-wrap').style.display = 'none';
+  window._colegioLat = null; window._colegioLng = null;
+  if (window._mapaEleitor) { window._mapaEleitor.remove(); window._mapaEleitor = null; }
 }
 
 async function excluirEleitor(id) {
@@ -811,9 +892,96 @@ function buscarCPF() {
   }, 600);
 }
 
+function maskCEP(el) {
+  let v = el.value.replace(/\D/g,'');
+  if (v.length > 8) v = v.slice(0,8);
+  if (v.length > 5) v = v.replace(/(\d{5})(\d*)/, '$1-$2');
+  el.value = v;
+}
+
+async function buscarCEP() {
+  const cep = document.getElementById('e-cep').value.replace(/\D/g,'');
+  if (cep.length < 8) return;
+  const loading = document.getElementById('cep-loading');
+  loading.style.display = 'block';
+  try {
+    const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const d = await r.json();
+    if (!d.erro) {
+      document.getElementById('e-rua').value = d.logradouro || '';
+      document.getElementById('e-bairro-reside').value = d.bairro || '';
+      document.getElementById('e-cidade').value = d.localidade || '';
+      document.getElementById('e-numero').focus();
+    }
+  } catch(e) {}
+  loading.style.display = 'none';
+}
+
+let _mapColegioTimer;
+function debounceMapColegio() {
+  clearTimeout(_mapColegioTimer);
+  _mapColegioTimer = setTimeout(buscarMapaColegio, 800);
+}
+
+async function buscarMapaColegio() {
+  const end = document.getElementById('e-endereco-colegio').value.trim();
+  const colegio = document.getElementById('e-colegio').value.trim();
+  if (end.length < 5) return;
+  const query = encodeURIComponent(`${end}, Guarulhos, SP, Brasil`);
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`);
+    const d = await r.json();
+    if (d && d.length > 0) {
+      const lat = parseFloat(d[0].lat);
+      const lng = parseFloat(d[0].lon);
+      window._colegioLat = lat;
+      window._colegioLng = lng;
+      document.getElementById('map-colegio-wrap').style.display = 'block';
+      const info = document.getElementById('map-pin-info');
+      info.style.display = 'block';
+      info.innerHTML = `<strong><i class="ti ti-map-pin"></i> ${colegio || 'Local de votação'}</strong>${d[0].display_name}`;
+      setTimeout(() => {
+        if (!window._mapaEleitor) {
+          window._mapaEleitor = L.map('map-container').setView([lat, lng], 16);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(window._mapaEleitor);
+        } else {
+          window._mapaEleitor.setView([lat, lng], 16);
+          window._mapaEleitor.eachLayer(l => { if (l instanceof L.Marker) window._mapaEleitor.removeLayer(l); });
+        }
+        const icon = L.divIcon({ html: '<div style="background:#E85D04;width:20px;height:20px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4)"></div>', iconSize:[20,20], iconAnchor:[10,10] });
+        L.marker([lat, lng], { icon }).addTo(window._mapaEleitor).bindPopup(`<strong>${colegio || 'Local de votação'}</strong><br>${end}`).openPopup();
+      }, 100);
+    }
+  } catch(e) {}
+}
+
+async function loadMapaGeral() {
+  const data = await sbQuery('eleitores', '?select=nome,colegio_eleitoral,endereco_colegio,lat_colegio,lng_colegio&not.lat_colegio=is.null');
+  const lista = Array.isArray(data) ? data.filter(e => e.lat_colegio && e.lng_colegio) : [];
+  document.getElementById('mapa-count').textContent = `${lista.length} local${lista.length !== 1 ? 'is' : ''}`;
+  setTimeout(() => {
+    if (window._mapaGeral) { window._mapaGeral.remove(); window._mapaGeral = null; }
+    const center = lista.length > 0 ? [lista[0].lat_colegio, lista[0].lng_colegio] : [-23.4628, -46.5333];
+    window._mapaGeral = L.map('map-geral').setView(center, 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(window._mapaGeral);
+    const grupos = {};
+    lista.forEach(e => {
+      const key = `${e.lat_colegio},${e.lng_colegio}`;
+      if (!grupos[key]) grupos[key] = { lat: e.lat_colegio, lng: e.lng_colegio, colegio: e.colegio_eleitoral || e.endereco_colegio, eleitores: [] };
+      grupos[key].eleitores.push(e.nome);
+    });
+    Object.values(grupos).forEach(g => {
+      const icon = L.divIcon({ html: `<div style="background:#E85D04;color:#fff;min-width:24px;height:24px;border-radius:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;padding:0 6px">${g.eleitores.length}</div>`, iconSize:[24,24], iconAnchor:[12,12], className:'' });
+      L.marker([g.lat, g.lng], { icon }).addTo(window._mapaGeral)
+        .bindPopup(`<strong>${g.colegio || 'Local de votação'}</strong><br>${g.eleitores.length} eleitor(es)<br><small>${g.eleitores.slice(0,5).join(', ')}${g.eleitores.length > 5 ? '...' : ''}</small>`);
+    });
+  }, 200);
+}
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('screen-login').classList.contains('active')) doLogin();
 });
 </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </body>
 </html>
