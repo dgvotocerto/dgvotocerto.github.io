@@ -702,7 +702,7 @@ function renderEleitores() {
       <td>${e.cpf || '-'}</td>
       <td>${e.telefone || '-'}</td>
       <td>${e.tipo === 'lideranca' ? '<span class="badge badge-orange">Liderança</span>' : '<span class="badge badge-gray">Eleitor</span>'}</td>
-      <td>${e.zona_eleitoral || '-'}</td>
+      <td>${e.zona || '-'}</td>
       <td>${e.bairro_reside || '-'}</td>
       <td>${e.assessores?.nome || '-'}</td>
       <td><div class="inline-actions">
@@ -725,8 +725,8 @@ async function salvarEleitor() {
     cpf: document.getElementById('e-cpf').value || null,
     email: document.getElementById('e-email').value || null,
     titulo: document.getElementById('e-titulo').value || null,
-    colegio_eleitoral: document.getElementById('e-colegio').value || null,
-    zona_eleitoral: document.getElementById('e-zona').value || null,
+    escola: document.getElementById('e-colegio').value || null,
+    zona: document.getElementById('e-zona').value || null,
     secao: document.getElementById('e-secao').value || null,
     bairro_reside: document.getElementById('e-bairro-reside').value || null,
     bairro_vota: document.getElementById('e-bairro-vota').value || null,
@@ -979,7 +979,7 @@ async function buscarMapaColegio() {
 }
 
 async function loadMapaGeral() {
-  const data = await sbQuery('eleitores', '?select=nome,colegio_eleitoral,endereco_colegio,lat_colegio,lng_colegio&not.lat_colegio=is.null');
+  const data = await sbQuery('eleitores', '?select=nome,escola,endereco_colegio,lat_colegio,lng_colegio&not.lat_colegio=is.null');
   const lista = Array.isArray(data) ? data.filter(e => e.lat_colegio && e.lng_colegio) : [];
   document.getElementById('mapa-count').textContent = `${lista.length} local${lista.length !== 1 ? 'is' : ''}`;
   setTimeout(() => {
@@ -990,7 +990,7 @@ async function loadMapaGeral() {
     const grupos = {};
     lista.forEach(e => {
       const key = `${e.lat_colegio},${e.lng_colegio}`;
-      if (!grupos[key]) grupos[key] = { lat: e.lat_colegio, lng: e.lng_colegio, colegio: e.colegio_eleitoral || e.endereco_colegio, eleitores: [] };
+      if (!grupos[key]) grupos[key] = { lat: e.lat_colegio, lng: e.lng_colegio, colegio: e.escola || e.endereco_colegio, eleitores: [] };
       grupos[key].eleitores.push(e.nome);
     });
     Object.values(grupos).forEach(g => {
