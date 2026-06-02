@@ -681,7 +681,7 @@ async function loadPainel() {
 }
 
 async function loadEleitores() {
-  const data = await sbQuery('eleitores', '?select=*,assessores(nome)&order=nome');
+  const data = await sbQuery('eleitores', '?select=*&order=nome');
   eleitoresData = Array.isArray(data) ? data : [];
   renderEleitores();
 }
@@ -704,7 +704,7 @@ function renderEleitores() {
       <td>${e.tipo === 'lideranca' ? '<span class="badge badge-orange">Liderança</span>' : '<span class="badge badge-gray">Eleitor</span>'}</td>
       <td>${e.zona || '-'}</td>
       <td>${e.bairro_reside || '-'}</td>
-      <td>${e.assessores?.nome || '-'}</td>
+      <td>${'-'}</td>
       <td><div class="inline-actions">
         ${currentUser?.role === 'admin' || e.assessor_id === currentUser?.id
           ? `<button class="btn btn-ghost btn-sm" title="Excluir" onclick="excluirEleitor('${e.id}')"><i class="ti ti-trash"></i></button>`
