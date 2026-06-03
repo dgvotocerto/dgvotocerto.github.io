@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v3 -->
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -706,6 +706,9 @@ function renderEleitores() {
       <td>${e.bairro_reside || '-'}</td>
       <td>${'-'}</td>
       <td><div class="inline-actions">
+        ${currentUser?.role === 'admin'
+          ? `<button class="btn btn-ghost btn-sm" title="Editar" onclick="abrirEditar('${e.id}')"><i class="ti ti-pencil"></i></button>`
+          : ''}
         ${currentUser?.role === 'admin' || e.assessor_id === currentUser?.id
           ? `<button class="btn btn-ghost btn-sm" title="Excluir" onclick="excluirEleitor('${e.id}')"><i class="ti ti-trash"></i></button>`
           : ''}
@@ -1001,10 +1004,137 @@ async function loadMapaGeral() {
   }, 200);
 }
 
+function abrirEditar(id) {
+  const e = eleitoresData.find(x => x.id === id);
+  if (!e) return;
+  document.getElementById('edit-id').value = e.id;
+  document.getElementById('edit-nome').value = e.nome || '';
+  document.getElementById('edit-cpf').value = e.cpf || '';
+  document.getElementById('edit-tel').value = e.telefone || '';
+  document.getElementById('edit-email').value = e.email || '';
+  document.getElementById('edit-zona').value = e.zona || '';
+  document.getElementById('edit-secao').value = e.secao || '';
+  document.getElementById('edit-escola').value = e.escola || '';
+  document.getElementById('edit-titulo').value = e.titulo || '';
+  document.getElementById('edit-cep').value = e.cep || '';
+  document.getElementById('edit-cidade').value = e.cidade || '';
+  document.getElementById('edit-rua').value = e.rua || '';
+  document.getElementById('edit-numero').value = e.numero || '';
+  document.getElementById('edit-bairro-reside').value = e.bairro_reside || '';
+  document.getElementById('edit-complemento').value = e.complemento || '';
+  document.getElementById('edit-obs').value = e.observacoes || '';
+  document.getElementById('edit-tipo').value = e.tipo || 'eleitor';
+  setEditTipo(e.tipo || 'eleitor', document.getElementById(e.tipo === 'lideranca' ? 'edit-tipo-lideranca' : 'edit-tipo-eleitor'));
+  document.getElementById('edit-success').style.display = 'none';
+  document.getElementById('edit-error').style.display = 'none';
+  document.getElementById('modal-editar').style.display = 'block';
+}
+
+function fecharEditar() {
+  document.getElementById('modal-editar').style.display = 'none';
+}
+
+function setEditTipo(tipo, btn) {
+  document.getElementById('edit-tipo').value = tipo;
+  document.querySelectorAll('#modal-editar .tipo-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+async function salvarEdicao() {
+  const id = document.getElementById('edit-id').value;
+  const nome = document.getElementById('edit-nome').value.trim();
+  const tel = document.getElementById('edit-tel').value.trim();
+  const sucEl = document.getElementById('edit-success');
+  const errEl = document.getElementById('edit-error');
+  sucEl.style.display = 'none'; errEl.style.display = 'none';
+  if (!nome || !tel) { errEl.textContent = 'Nome e telefone são obrigatórios.'; errEl.style.display = 'block'; return; }
+  const payload = {
+    nome, telefone: tel,
+    cpf: document.getElementById('edit-cpf').value || null,
+    email: document.getElementById('edit-email').value || null,
+    titulo: document.getElementById('edit-titulo').value || null,
+    escola: document.getElementById('edit-escola').value || null,
+    zona: document.getElementById('edit-zona').value || null,
+    secao: document.getElementById('edit-secao').value || null,
+    bairro_reside: document.getElementById('edit-bairro-reside').value || null,
+    cep: document.getElementById('edit-cep').value || null,
+    rua: document.getElementById('edit-rua').value || null,
+    numero: document.getElementById('edit-numero').value || null,
+    complemento: document.getElementById('edit-complemento').value || null,
+    cidade: document.getElementById('edit-cidade').value || null,
+    observacoes: document.getElementById('edit-obs').value || null,
+    tipo: document.getElementById('edit-tipo').value,
+  };
+  const ok = await sbUpdate('eleitores', id, payload);
+  if (ok) {
+    sucEl.style.display = 'block';
+    setTimeout(() => { fecharEditar(); loadEleitores(); }, 1500);
+  } else {
+    errEl.textContent = 'Erro ao salvar.'; errEl.style.display = 'block';
+  }
+}
+
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') fecharEditar();
   if (e.key === 'Enter' && document.getElementById('screen-login').classList.contains('active')) doLogin();
 });
 </script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- MODAL EDITAR ELEITOR -->
+<div id="modal-editar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;overflow-y:auto;padding:2rem">
+  <div style="background:#fff;border-radius:16px;max-width:700px;margin:0 auto;border-top:4px solid var(--orange)">
+    <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <h3 style="font-size:16px;font-weight:700"><i class="ti ti-pencil"></i> Editar eleitor</h3>
+      <button onclick="fecharEditar()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-muted)"><i class="ti ti-x"></i></button>
+    </div>
+    <div style="padding:1.5rem">
+      <div id="edit-success" class="success-msg">Salvo com sucesso!</div>
+      <div id="edit-error" class="error-msg"></div>
+      <input type="hidden" id="edit-id">
+      <div class="form-row">
+        <div class="form-group"><label>Nome completo *</label><input type="text" id="edit-nome"></div>
+        <div class="form-group"><label>CPF</label><input type="text" id="edit-cpf" oninput="maskCPF(this)" maxlength="14"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Telefone *</label><input type="tel" id="edit-tel" oninput="maskTel(this)"></div>
+        <div class="form-group"><label>E-mail</label><input type="email" id="edit-email"></div>
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <div class="tipo-toggle">
+          <button class="tipo-btn active" id="edit-tipo-eleitor" onclick="setEditTipo('eleitor', this)"><i class="ti ti-user"></i> Eleitor</button>
+          <button class="tipo-btn" id="edit-tipo-lideranca" onclick="setEditTipo('lideranca', this)"><i class="ti ti-star"></i> Liderança</button>
+        </div>
+        <input type="hidden" id="edit-tipo" value="eleitor">
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Zona eleitoral</label><input type="text" id="edit-zona"></div>
+        <div class="form-group"><label>Seção</label><input type="text" id="edit-secao"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Escola / Colégio eleitoral</label><input type="text" id="edit-escola"></div>
+        <div class="form-group"><label>Título eleitoral</label><input type="text" id="edit-titulo"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>CEP</label><input type="text" id="edit-cep" oninput="maskCEP(this)" maxlength="9"></div>
+        <div class="form-group"><label>Cidade</label><input type="text" id="edit-cidade"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Rua</label><input type="text" id="edit-rua"></div>
+        <div class="form-group"><label>Número</label><input type="text" id="edit-numero"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Bairro onde reside</label><input type="text" id="edit-bairro-reside"></div>
+        <div class="form-group"><label>Complemento</label><input type="text" id="edit-complemento"></div>
+      </div>
+      <div class="form-group"><label>Observações</label><textarea id="edit-obs"></textarea></div>
+      <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:1rem">
+        <button class="btn btn-ghost" onclick="fecharEditar()"><i class="ti ti-x"></i> Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarEdicao()" style="width:auto;padding:12px 28px"><i class="ti ti-device-floppy"></i> Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
