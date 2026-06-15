@@ -483,15 +483,16 @@ html, body { height: 100%; font-family: 'Sora', sans-serif; background: var(--bg
     <div class="section" id="sec-mapa">
       <div class="pg-title" style="margin-bottom:10px">🗺️ Mapa · Guarulhos</div>
       <div class="map-legend">
+        <div class="ml-item"><div style="width:16px;height:16px;border-radius:50%;background:#3a86ff;border:2px solid #1a5fbf;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#fff">N</div>Escola</div>
         <div class="ml-item"><div style="width:14px;height:14px;background:var(--amarelo);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);"></div>Liderança</div>
         <div class="ml-item"><div class="ml-dot" style="background:var(--verde)"></div>Eleitor</div>
       </div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+        <div class="chip active" data-layer="escolas" onclick="toggleLayer(this)" style="font-size:11px;padding:5px 11px">🏫 Escolas</div>
+        <div class="chip active" data-layer="lideres" onclick="toggleLayer(this)" style="font-size:11px;padding:5px 11px">⭐ Lideranças</div>
+        <div class="chip active" data-layer="eleitores" onclick="toggleLayer(this)" style="font-size:11px;padding:5px 11px">👤 Eleitores</div>
+      </div>
       <div class="map-filters" id="map-filters-wrap">
-        <select id="mf-tipo" onchange="refreshMarkers()" style="padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'Sora',sans-serif;font-size:12px">
-          <option value="">Todos os tipos</option>
-          <option value="lider">⭐ Lideranças</option>
-          <option value="eleitor">Eleitores</option>
-        </select>
         <select id="mf-zona" onchange="refreshMarkers()" style="padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:'Sora',sans-serif;font-size:12px">
           <option value="">Todas as zonas</option>
         </select>
@@ -1070,44 +1071,118 @@ function initMap() {
   refreshMarkers();
 }
 
+// Controle de camadas
+let activeLayers = {escolas: true, lideres: true, eleitores: true};
+
+function toggleLayer(el) {
+  const layer = el.dataset.layer;
+  activeLayers[layer] = !activeLayers[layer];
+  el.classList.toggle('active', activeLayers[layer]);
+  refreshMarkers();
+}
+
+function getEscolaIcon(total, liders) {
+  const size = Math.min(30 + Math.sqrt(total) * 2.5, 54);
+  const s = Math.round(size);
+  const hasLider = liders > 0;
+  const bg = hasLider ? '#f5c518' : '#3a86ff';
+  const border = hasLider ? '#b8860b' : '#1a5fbf';
+  const tc = hasLider ? '#000' : '#fff';
+  const html = `<div style="width:${s}px;height:${s}px;border-radius:50%;background:${bg};border:3px solid ${border};display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,0.45);font-family:sans-serif;font-weight:800;color:${tc};font-size:${s>42?13:10}px;line-height:1.1;cursor:pointer"><span>${total}</span>${hasLider?`<span style="font-size:8px">⭐${liders}</span>`:''}</div>`;
+  return L.divIcon({html,className:'',iconSize:[s,s],iconAnchor:[s/2,s/2],popupAnchor:[0,-(s/2+4)]});
+}
+
 function refreshMarkers() {
   if(!leafMap) return;
   mapMarkers.forEach(m => leafMap.removeLayer(m));
   mapMarkers = [];
-  const fTipo = document.getElementById('mf-tipo')?.value || '';
+
   const fAss  = document.getElementById('mf-assessor')?.value || '';
   const fZona = document.getElementById('mf-zona')?.value || '';
-  let list = [...VOTERS];
-  if(fTipo) list = list.filter(v=>v.tipo===fTipo);
-  if(fAss)  list = list.filter(v=>v.assessor_id===fAss);
-  if(fZona) list = list.filter(v=>(v.zona||'')===fZona);
-  const countEl = document.getElementById('map-count');
-  if(countEl) countEl.textContent = `${list.length} exibido${list.length!==1?'s':''}`;
-  list.forEach(v => {
-    const escola = ESCOLAS.find(e=>e.n===v.escola);
-    const coords = escola ? getCoords(escola.b) : getCoords(v.escola);
-    if(!coords) return;
-    const pos = [coords.lat+(Math.random()-0.5)*0.0015, coords.lng+(Math.random()-0.5)*0.0015];
-    const an = getUName(v.assessor_id);
-    const popup = `<div style="font-family:sans-serif;min-width:180px"><b style="font-size:14px">${v.nome}</b><br><span style="color:${v.tipo==='lider'?'#b8860b':'#007a38'};font-weight:600">${v.tipo==='lider'?'⭐ Liderança':'Eleitor'}</span><br><br>📍 Zona ${v.zona||'?'} · §${v.secao||'?'}<br>📞 ${v.telefone||'–'}<br>🏫 ${v.escola||'–'}<br>${v.endereco?'🏠 '+v.endereco+'<br>':''}👤 ${an}</div>`;
-    let marker;
-    if(v.tipo === 'lider') {
-      marker = L.marker(pos, {icon:getLeaderIcon()}).addTo(leafMap).bindPopup(popup);
-    } else {
-      marker = L.circleMarker(pos, {radius:8,fillColor:'#00c45a',color:'#fff',weight:2,opacity:1,fillOpacity:0.9}).addTo(leafMap).bindPopup(popup);
-    }
-    mapMarkers.push(marker);
-  });
+
+  let voters = [...VOTERS];
+  if(fAss)  voters = voters.filter(v=>v.assessor_id===fAss);
+  if(fZona) voters = voters.filter(v=>(v.zona||'')===fZona);
+
+  // CAMADA ESCOLAS
+  if(activeLayers.escolas) {
+    const escolaStats = {};
+    voters.forEach(v => {
+      if(!v.escola) return;
+      if(!escolaStats[v.escola]) escolaStats[v.escola] = {total:0,liders:0,lista:[]};
+      escolaStats[v.escola].total++;
+      if(v.tipo==='lider') escolaStats[v.escola].liders++;
+      escolaStats[v.escola].lista.push(v);
+    });
+    // inclui todas as escolas (mesmo sem cadastros)
+    ESCOLAS.forEach(e => {
+      if(fZona && String(e.z)!==fZona) return;
+      if(!escolaStats[e.n]) escolaStats[e.n] = {total:0,liders:0,lista:[],def:e};
+      else escolaStats[e.n].def = e;
+    });
+    Object.entries(escolaStats).forEach(([nome,info]) => {
+      const def = info.def || ESCOLAS.find(e=>e.n===nome);
+      if(!def) return;
+      const coords = getCoords(def.b);
+      if(!coords) return;
+      const eleitores = info.total - info.liders;
+      const popupHtml = `<div style="font-family:sans-serif;min-width:210px;max-width:260px">
+        <b style="font-size:13px">🏫 ${nome}</b><br>
+        <span style="color:#888;font-size:11px">Zona ${def.z} · ${def.b}</span><br><br>
+        <div style="display:flex;gap:16px;margin-bottom:8px">
+          <div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#3a86ff">${info.total}</div><div style="font-size:10px;color:#666">total</div></div>
+          <div style="font-size:12px;line-height:1.8"><span style="color:#b8860b">⭐ ${info.liders} liderança${info.liders!==1?'s':''}</span><br><span style="color:#007a38">👤 ${eleitores} eleitor${eleitores!==1?'es':''}</span></div>
+        </div>
+        ${info.lista.slice(0,5).map(v=>`<div style="font-size:11px;padding:2px 0;border-top:1px solid #eee">${v.tipo==='lider'?'⭐':'👤'} ${v.nome}</div>`).join('')}
+        ${info.lista.length>5?`<div style="font-size:10px;color:#aaa;margin-top:3px">+${info.lista.length-5} mais...</div>`:''}
+      </div>`;
+      const m = L.marker([coords.lat,coords.lng],{icon:getEscolaIcon(info.total,info.liders)}).addTo(leafMap).bindPopup(popupHtml);
+      mapMarkers.push(m);
+    });
+  }
+
+  // CAMADA LIDERANÇAS
+  if(activeLayers.lideres) {
+    voters.filter(v=>v.tipo==='lider').forEach(v => {
+      const e = ESCOLAS.find(x=>x.n===v.escola);
+      const c = e?getCoords(e.b):getCoords(v.escola);
+      if(!c) return;
+      const pos=[c.lat+(Math.random()-0.5)*0.002,c.lng+(Math.random()-0.5)*0.002];
+      const popup=`<div style="font-family:sans-serif;min-width:180px"><b>${v.nome}</b><br><span style="color:#b8860b;font-weight:600">⭐ Liderança</span><br><br>📍 Zona ${v.zona||'?'} · §${v.secao||'?'}<br>📞 ${v.telefone||'–'}<br>🏫 ${v.escola||'–'}<br>${v.endereco?'🏠 '+v.endereco+'<br>':''}👤 ${getUName(v.assessor_id)}</div>`;
+      mapMarkers.push(L.marker(pos,{icon:getLeaderIcon(),zIndexOffset:1000}).addTo(leafMap).bindPopup(popup));
+    });
+  }
+
+  // CAMADA ELEITORES
+  if(activeLayers.eleitores) {
+    voters.filter(v=>v.tipo==='eleitor').forEach(v => {
+      const e = ESCOLAS.find(x=>x.n===v.escola);
+      const c = e?getCoords(e.b):getCoords(v.escola);
+      if(!c) return;
+      const pos=[c.lat+(Math.random()-0.5)*0.002,c.lng+(Math.random()-0.5)*0.002];
+      const popup=`<div style="font-family:sans-serif;min-width:180px"><b>${v.nome}</b><br><span style="color:#007a38;font-weight:600">Eleitor</span><br><br>📍 Zona ${v.zona||'?'} · §${v.secao||'?'}<br>📞 ${v.telefone||'–'}<br>🏫 ${v.escola||'–'}<br>${v.endereco?'🏠 '+v.endereco+'<br>':''}👤 ${getUName(v.assessor_id)}</div>`;
+      mapMarkers.push(L.circleMarker(pos,{radius:7,fillColor:'#00c45a',color:'#fff',weight:2,opacity:1,fillOpacity:0.9}).addTo(leafMap).bindPopup(popup));
+    });
+  }
+
+  const countEl = document.getElementById('map-counter');
+  if(countEl) {
+    const parts = [];
+    if(activeLayers.escolas) { const n=ESCOLAS.filter(e=>!fZona||String(e.z)===fZona).length; parts.push(`🏫 ${n} escolas`); }
+    if(activeLayers.lideres) parts.push(`⭐ ${voters.filter(v=>v.tipo==='lider').length} lideranças`);
+    if(activeLayers.eleitores) parts.push(`👤 ${voters.filter(v=>v.tipo==='eleitor').length} eleitores`);
+    countEl.textContent = parts.join(' · ');
+  }
 }
 
 function initRelatorios() {
   const zonas = [...new Set(VOTERS.map(v=>v.zona).filter(Boolean))].sort((a,b)=>Number(a)-Number(b));
-  document.getElementById('r-zona').innerHTML = '<option value="">Todas as zonas</option>' + zonas.map(z=>`<option value="${z}">${z}</option>`).join('');
+  document.getElementById('rf-zona').innerHTML = '<option value="">Todas as zonas</option>' + zonas.map(z=>`<option value="${z}">${z}</option>`).join('');
   const bv = [...new Set(VOTERS.map(v=>{ const e=ESCOLAS.find(x=>x.n===v.escola); return e?e.b:null; }).filter(Boolean))].sort();
-  document.getElementById('r-bairro-vota').innerHTML = '<option value="">Todos os bairros</option>' + bv.map(b=>`<option value="${b}">${b}</option>`).join('');
+  document.getElementById('rf-bairro-vota').innerHTML = '<option value="">Todos os bairros</option>' + bv.map(b=>`<option value="${b}">${b}</option>`).join('');
   if(CU.role==='admin') {
     const av = USERS.filter(u=>u.role==='assessor');
-    document.getElementById('r-assessor').innerHTML = '<option value="">Todos os assessores</option>' +
+    document.getElementById('rf-assessor').innerHTML = '<option value="">Todos os assessores</option>' +
       av.map(a=>`<option value="${a.id}">${a.nome}</option>`).join('') +
       `<option value="${CU.id}">${CU.nome} (admin)</option>`;
   }
@@ -1115,11 +1190,11 @@ function initRelatorios() {
 }
 
 function getRelatorioData() {
-  const fTipo  = document.getElementById('r-tipo').value;
-  const fAss   = document.getElementById('r-assessor')?.value || '';
-  const fZona  = document.getElementById('r-zona').value;
-  const fBVota = document.getElementById('r-bairro-vota').value.toLowerCase();
-  const fBRes  = (document.getElementById('r-bairro-res').value||'').toLowerCase();
+  const fTipo  = document.getElementById('rf-tipo').value;
+  const fAss   = document.getElementById('rf-assessor')?.value || '';
+  const fZona  = document.getElementById('rf-zona').value;
+  const fBVota = document.getElementById('rf-bairro-vota').value.toLowerCase();
+  const fBRes  = (document.getElementById('rf-bairro-res').value||'').toLowerCase();
   let list = [...VOTERS];
   if(fTipo)  list = list.filter(v=>v.tipo===fTipo);
   if(fAss)   list = list.filter(v=>v.assessor_id===fAss);
@@ -1141,14 +1216,14 @@ function previewRelatorio() {
 }
 
 function limparFiltrosRelatorio() {
-  ['r-tipo','r-assessor','r-zona','r-bairro-vota','r-bairro-res'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['rf-tipo','rf-assessor','rf-zona','rf-bairro-vota','rf-bairro-res'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   previewRelatorio();
 }
 
 function buildRelatorioLabel() {
-  const fTipo  = document.getElementById('r-tipo').value;
-  const fAss   = document.getElementById('r-assessor')?.value || '';
-  const fZona  = document.getElementById('r-zona').value;
+  const fTipo  = document.getElementById('rf-tipo').value;
+  const fAss   = document.getElementById('rf-assessor')?.value || '';
+  const fZona  = document.getElementById('rf-zona').value;
   const fBVota = document.getElementById('r-bairro-vota').value;
   const fBRes  = document.getElementById('r-bairro-res')?.value||'';
   const parts = [];
