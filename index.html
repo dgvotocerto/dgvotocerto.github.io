@@ -14,25 +14,25 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
 :root {
-  --verde: #00c45a;
-  --verde-escuro: #007a38;
-  --verde-dim: rgba(0,196,90,0.12);
-  --amarelo: #f5c518;
-  --amarelo-dim: rgba(245,197,24,0.15);
-  --bg: #0a0e13;
-  --bg2: #111720;
-  --bg3: #1a2030;
-  --bg4: #222b3a;
-  --border: #2a3548;
-  --border2: #1e2a3a;
-  --text: #e8eef6;
-  --text2: #7a8fa8;
-  --text3: #4a9eff;
-  --danger: #ff4757;
-  --danger-dim: rgba(255,71,87,0.12);
+  --verde: #e67e22;
+  --verde-escuro: #c0392b;
+  --verde-dim: rgba(230,126,34,0.12);
+  --amarelo: #f39c12;
+  --amarelo-dim: rgba(243,156,18,0.15);
+  --bg: #f4f6f9;
+  --bg2: #ffffff;
+  --bg3: #f0f2f5;
+  --bg4: #e8eaed;
+  --border: #dde1e7;
+  --border2: #eaecef;
+  --text: #1a1f2e;
+  --text2: #6b7280;
+  --text3: #2563eb;
+  --danger: #ef4444;
+  --danger-dim: rgba(239,68,68,0.1);
   --r: 10px;
   --r2: 14px;
-  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; font-size: 14px; }
@@ -272,7 +272,7 @@ html, body { height: 100%; font-family: 'Sora', sans-serif; background: var(--bg
 .dl-value { font-size: 14px; }
 .dl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .note-box {
-  background: var(--bg3); border-left: 3px solid var(--verde); border-radius: 0 var(--r) var(--r) 0;
+  background: #fff8f0; border-left: 3px solid var(--verde); border-radius: 0 var(--r) var(--r) 0;
   padding: 12px 14px; font-size: 13px; color: var(--text2); line-height: 1.6; white-space: pre-wrap;
 }
 
@@ -306,7 +306,7 @@ html, body { height: 100%; font-family: 'Sora', sans-serif; background: var(--bg
 
 .toast {
   position: fixed; bottom: 82px; left: 50%; transform: translateX(-50%) translateY(12px);
-  background: var(--bg3); border: 1px solid var(--verde); border-radius: 10px;
+  background: #fff; border: 2px solid var(--verde); border-radius: 10px; color: var(--text);
   padding: 11px 20px; font-size: 13px; font-weight: 500; z-index: 400;
   opacity: 0; transition: all 0.25s; white-space: nowrap;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
@@ -482,10 +482,15 @@ html, body { height: 100%; font-family: 'Sora', sans-serif; background: var(--bg
     <!-- MAPA -->
     <div class="section" id="sec-mapa">
       <div class="pg-title" style="margin-bottom:10px">🗺️ Mapa · Guarulhos</div>
-      <div class="map-legend">
-        <div class="ml-item"><div style="width:16px;height:16px;border-radius:50%;background:#3a86ff;border:2px solid #1a5fbf;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#fff">N</div>Escola</div>
-        <div class="ml-item"><div style="width:14px;height:14px;background:var(--amarelo);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);"></div>Liderança</div>
-        <div class="ml-item"><div class="ml-dot" style="background:var(--verde)"></div>Eleitor</div>
+      <div class="map-legend" style="flex-wrap:wrap;gap:8px">
+        <div class="ml-item"><div style="width:14px;height:14px;border-radius:50%;background:#3a86ff;border:2px solid #1a5fbf"></div>Z.176</div>
+        <div class="ml-item"><div style="width:14px;height:14px;border-radius:50%;background:#8b5cf6;border:2px solid #6d28d9"></div>Z.185</div>
+        <div class="ml-item"><div style="width:14px;height:14px;border-radius:50%;background:#00b894;border:2px solid #00896e"></div>Z.278</div>
+        <div class="ml-item"><div style="width:14px;height:14px;border-radius:50%;background:#e67e22;border:2px solid #c0392b"></div>Z.279</div>
+        <div class="ml-item"><div style="width:14px;height:14px;border-radius:50%;background:#e74c3c;border:2px solid #c0392b"></div>Z.393</div>
+        <div class="ml-item"><div style="width:14px;height:14px;border-radius:50%;background:#e91e8c;border:2px solid #b5156c"></div>Z.394</div>
+        <div class="ml-item"><div style="width:14px;height:14px;border-radius:50%;background:#00b4d8;border:2px solid #0096b7"></div>Z.395</div>
+        <div class="ml-item"><div style="width:14px;height:14px;background:#f5c518;clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)"></div>Liderança</div>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
         <div class="chip active" data-layer="escolas" onclick="toggleLayer(this)" style="font-size:11px;padding:5px 11px">🏫 Escolas</div>
@@ -1054,6 +1059,152 @@ function initMap() {
   refreshMarkers();
 }
 
+const TRE_DATA = {
+  "COLGIO DA POLCIA MILITAR - UNIDADE GUARULHOS": {"e":6567,"end":"AVENIDA SALGADO FILHO, 3025"},
+  "COLEGIO T. PARTHENON - UNIDADE I": {"e":6147,"end":"RUA CÔNSUL ORESTES CORREA, 733"},
+  "E.E. LYDIA KITZ MOREIRA": {"e":5970,"end":"RUA DOREZOPOLIS, 294"},
+  "E.E. PASTOR AMARO JOS DOS SANTOS": {"e":2595,"end":"RUA POMBAL, 40 - JARDIM SÃO PAULO"},
+  "E.E. PEDRO ROBERTO VAGHI": {"e":762,"end":"RUA FALCÃO DOURADO, 77"},
+  "E.E. PROF BENEDITA DE OLIVEIRA ALE": {"e":3466,"end":"RUA SÃO JOÃO DEL REI, 141"},
+  "E.E. PROFESSOR MOTOOKA": {"e":5104,"end":"RUA WALTER PEREIRA DE LIMA, 41"},
+  "E.P.G CRISPINIANO SOARES": {"e":2743,"end":"RUA PROFESSOR VASCO DE QUEIROZ GUIMARÃES, 289"},
+  "E.P.G. ANTONIO APARECIDO MAGALHAES": {"e":1479,"end":"RUA VITOR COSTA, S/N"},
+  "E.P.G. JOSE CARLOS DA SILVA": {"e":5293,"end":"RUA JOAO GOMES, S/N"},
+  "EE PADRE CONRADO SIVILA ALSINA": {"e":6015,"end":"AVENIDA BOM CLIMA, 556"},
+  "EE. FRANCISCO ANTUNES FILHO": {"e":5382,"end":"RUA PROFESSORA MARIA DEL PILAR MUÑOZ BONONATO, S/N"},
+  "EE. CAPISTRANO DE ABREU": {"e":2208,"end":"RUA CAPITÃO GABRIEL, 385"},
+  "EE. CONSELHEIRO CRISPINIANO": {"e":6018,"end":"RUA ARMINDA DE LIMA, 75"},
+  "EE. FIORAVANTE IERVOLINO": {"e":3239,"end":"RUA JURACY DE CAMARGO, 60"},
+  "EE. MARIA LEONI": {"e":4801,"end":"PRAÇA CARMEN MIRANDA, S/N"},
+  "EE. PROF ALICE CHUERY": {"e":5860,"end":"RUA SERRA DO SALITRE, 107"},
+  "EE. PROF DULCE BREVES NEVES": {"e":1639,"end":"RUA ORIXÁ, S/N"},
+  "EE. PROF FRANCISCA BATISTA TRINDADE": {"e":2825,"end":"RUA PAULO JOSÉ BAZZANI, 268"},
+  "EE. PROF HILDA PRATES GALLO": {"e":6728,"end":"AVENIDA BRIGADEIRO FARIA LIMA, 3700"},
+  "EE. PROF MARIA HELENA BARBOSA MARTINS": {"e":6898,"end":"RUA BRASILÂNDIA, S/N"},
+  "EE. PROF FREDERICO DE BARROS BROTERO": {"e":4928,"end":"RUA JAIMINHO, 150"},
+  "EE. PROF SILVRIO BERTONI": {"e":5088,"end":"RUA SÃO GERALDO, 303"},
+  "EE. VEREADOR ANTONIO DE RE": {"e":5474,"end":"RUA DA PENHA, 123"},
+  "EE. VEREADOR ELSIO DE OLIVEIRA NEVES": {"e":4565,"end":"RUA CRISTÓBAL CLAUDIO ELLIO, 366"},
+  "ESCOLA SENAI HERMENEGILDO CAMPOS": {"e":2697,"end":"AVENIDA DR. RENATO DE ANDRADE MAIA, 601"},
+  "IFSP - INSTITUTO FEDERAL SP": {"e":3058,"end":"AVENIDA SALGADO FILHO, 3501"},
+  "SERVIO SOCIAL DA INDSTRIA - SESI": {"e":0,"end":"RUA DR RICARDO FERREIRA DOS REIS, N 45 - JARDIM ADRIANA"},
+  "UNIVERSIDADE DE GUARULHOS - UNG": {"e":4777,"end":"PRAÇA TERESA CRISTINA, 1"},
+  "EE LOUIS BRAILLE": {"e":408,"end":"RUA JOÃO AVELINO FAUTHZ, 150"},
+  "EE. AGOSTINHO CANO": {"e":5413,"end":"RUA CINCO, 534"},
+  "EE. ANNA LAMBERGA ZEGLIO": {"e":5361,"end":"RUA DO POENTE, 100"},
+  "EE. BARTHOLOMEU DE CARLOS": {"e":4830,"end":"RUA ARACAJU, 490"},
+  "EE. DEPUTADO MAURCIO GOULART": {"e":5237,"end":"RUA ITACARAMBI, 8"},
+  "EE. GUILHERMINO RODRIGUES DE LIMA": {"e":4612,"end":"RUA GUARU, 156"},
+  "EE. ORLANDO MINELLA": {"e":4464,"end":"RUA CANDELÁRIA, 376"},
+  "EE. PADRE AUGUST STAUDER": {"e":2062,"end":"RUA MINISTRO HIPOLITO, 163"},
+  "EE. PARQUE JUREMA III": {"e":5779,"end":"RUA JAGUAREMA, 23"},
+  "EE. PASTOR JOO NUNES": {"e":6157,"end":"RUA CENTENÁRIO, S/N"},
+  "EE. PIMENTAS VII": {"e":6275,"end":"AVENIDA MARGINAL SUL S/N"},
+  "EE. PROF ALAYDE MARIA VICENTE": {"e":4888,"end":"RUA IDA RIGHI, 134"},
+  "EE. PROF MARIA APARECIDA FELIX PORTO": {"e":7452,"end":"RUA IMPERIAL, 99"},
+  "EE. PROF MARIA APARECIDA RODRIGUES": {"e":7531,"end":"RUA BERILO, 72"},
+  "EE. PROF MARIA HILDA ORNELAS DE OLIVEIRA": {"e":3752,"end":"RUA IVINHEMA, 274"},
+  "EE. PROF MARINHA FERREIRA DO NASCIMENTO": {"e":3284,"end":"RUA ARACAJU, 392"},
+  "EE. PROF THEREZINHA CLOSA ELEUTERIO": {"e":6569,"end":"RUA CHARLES MIARS COOPER, 432"},
+  "EE. PROFESSOR MARIO NAKATA": {"e":3978,"end":"RUA EURACHIO MAURICIO, SN"},
+  "EE. PROF ANTONIO VIANA DE SOUZA": {"e":5404,"end":"RUA TURIM, 192"},
+  "EE. PROF CID AUGUSTO GUELLI": {"e":4983,"end":"RUA BRAGA, 312"},
+  "EE. PROF LICINIO CARPINELLI": {"e":5776,"end":"AVENIDA CENTENARIO, 159"},
+  "EPG DORIVAL CAYMMI": {"e":3447,"end":"RUA DA GRANJA, S/N"},
+  "EPG DORCELINA FOLADOR": {"e":5352,"end":"RUA UMUARAMA, 290"},
+  "EPG SOPHIA FANTAZZINI CECCHINATO": {"e":3606,"end":"RUA ANTONIO ELIAS RODRIGUES, 369"},
+  "COLGIO ADVENTISTA DE GUARULHOS": {"e":4821,"end":"RUA ANANIAS JOSÉ DE VASCONCELOS, 66"},
+  "COLGIO FARIAS BRITO": {"e":4094,"end":"ALAMEDA AIDA, 41"},
+  "COLEGIO GUILHERME DE ALMEIDA": {"e":4092,"end":"AVENIDA EMÍLIO RIBAS, 855"},
+  "EE. CAPITAO PM ALBERTO MENDES JUNIOR": {"e":3383,"end":"PRAÇA NOSSA SENHORA APARECIDA, 245"},
+  "EE. CARLOS MACHADO BITTENCOURT": {"e":4167,"end":"RUA MADALENA RAMPINELLI, 39"},
+  "EE. CORONEL ARY GOMES": {"e":6462,"end":"RUA ALEGRE, 213"},
+  "EE. DOM PAULO ROLIM LOUREIRO": {"e":7964,"end":"RUA DOMINGOS FANGANIELLO, 251"},
+  "EE. JOO ALVARES DE SIQUEIRA BUENO": {"e":5119,"end":"RUA CABO ANTONIO PEREIRA DA SILVA, 446"},
+  "EE. JOO CRISPINIANO SOARES": {"e":2743,"end":"RUA PROFESSOR VASCO DE QUEIROZ GUIMARÃES, 289"},
+  "EE. PROFESSOR ENNIO CHIESA": {"e":3806,"end":"RUA MARIANO MANZONE, 88"},
+  "EE. PROFESSOR FABIO FANUCCHI": {"e":3507,"end":"AVENIDA FAUSTINO RAMALHO, 307"},
+  "EE. PROF JOSE SCARAMELLI": {"e":5125,"end":"RUA DAS PALMEIRAS,776"},
+  "EE. PROF PAULO NOGUEIRA": {"e":3686,"end":"RUA BARTOLOMEU DE GUSMÃO, 2"},
+  "EE. ROTARY": {"e":2221,"end":"AVENIDA SENADOR ADOLF SCHINDILING, 35"},
+  "EE. ALLYRIO DE FIGUEIREDO BRASIL": {"e":3885,"end":"RUA DUQUE DE CAXIAS, 182"},
+  "EE. FLVIO XAVIER ARANTES": {"e":4628,"end":"RUA MIGUEL FERNANDES MALDONADO, 276"},
+  "EE. JARDIM SANTA LIDIA": {"e":6928,"end":"RUA JOSÉ NILSON FERRETI, 62"},
+  "EE. MARIA CELIA FALCAO RODRIGUES": {"e":6137,"end":"RUA ARACI VALENTE, 159"},
+  "EE. PADRE ANTONIO VELASCO ARAGON": {"e":4991,"end":"RUA FRAIBURGO, 100"},
+  "EE. PROF JOAO LUIZ DE GODOY MOREIRA": {"e":6059,"end":"RUA ANA ALVES DOS SANTOS, 31"},
+  "EE. PROF JOAQUIM GARCIA SALVADOR": {"e":2820,"end":"RUA CATULO DA PAIXÃO CEARENSE, 78"},
+  "EE. PROF MILTON CERNACH": {"e":6394,"end":"AVENIDA CESÁRIO LANGE, 251"},
+  "EE. PROFA. MARIA ANGLICA SOAVE": {"e":6437,"end":"RUA CEL. PACHECO, 109"},
+  "EE. VALDIVINO DE CASTRO PEREIRA": {"e":3786,"end":"AV. TIRADENTES, 4148"},
+  "EPG. AMADOR BUENO": {"e":1479,"end":"RUA MARIA ELISA, 10, PRAÇA 8"},
+  "EPG. MARIO LAGO": {"e":3866,"end":"RUA ANDRÔMEDA, 98"},
+  "APAE GUARULHOS UNIDADE 2": {"e":3350,"end":"RUA SEGUNDO TENENTE ALUÍSIO DE FARIA, 141"},
+  "COLGIO ADVENTISTA DE VILA GALVAO": {"e":3452,"end":"RUA VICENTE MELRO, 1.072"},
+  "COLGIO MAHA-DEI": {"e":3798,"end":"AV. DR. TIMÓTEO PENTEADO, 3150"},
+  "EE. BOM PASTOR": {"e":3103,"end":"R. FELIPE MARCONDES RUBIO, 798"},
+  "EE. CARLOS GIULIETTO": {"e":5703,"end":"RUA DONA TECLA, 286"},
+  "EE. CLARICE LISPECTOR": {"e":1192,"end":"R. MIGUEL BIONDI, 566"},
+  "EE. FRANCISCO MILTON DE ANDRADE": {"e":4401,"end":"RUA 115, 30"},
+  "EE. JOCILA PEREIRA GUIMARAES": {"e":3599,"end":"R. MARIA ELISA NOBREGA, 100"},
+  "EE. JOSE ALVES DE CERQUEIRA CESAR": {"e":5368,"end":"AV. SÃO LUIZ, 451"},
+  "EE. JOSE MARUN ATALLA": {"e":4743,"end":"RUA 36 A, S/N"},
+  "EE. JUVENAL RAMOS BARBOSA": {"e":5403,"end":"R. MARCOS ANTONIO LIOTA, S/N"},
+  "EE. PROF. HOMERO RUBENS DE SA": {"e":5351,"end":"RUA CEARÁ, 50"},
+  "EE. PROF. JOSE ROBERTO FRIEBOLIM": {"e":4117,"end":"RUA BAHIA, S/N"},
+  "EE. PROFA. ROBERTA MARIA LOPES CHAVES": {"e":3338,"end":"RUA MARIA MENEZES C. LACERDA, 65"},
+  "EPG CESAR LATTES": {"e":5212,"end":"AV. MARIA GEBIN DE MORAES, 867"},
+  "EPG MARIO QUINTANA": {"e":4352,"end":"RUA ISMAEL MANOEL DA SILVA, 97"},
+  "EE. BRIGADEIRO HAROLDO VELOSO": {"e":7488,"end":"RUA ESTER, 200"},
+  "EE. ESTEVAM DIAS TAVARES": {"e":2765,"end":"TRAVESSA SÃO ROQUE, 21"},
+  "EE. PARQUE SANTOS DUMONT": {"e":6135,"end":"RUA OLHO D'ÁGUA DOS BORGES, 75"},
+  "EE. PROF. ARTHUR MARRET": {"e":3975,"end":"RUA FÁBIO SALVADOR BEI, 678"},
+  "EE. PROF. CYRO BARREIROS": {"e":5607,"end":"AVENIDA ARACATI, 202"},
+  "EE. PROF. HELIO POLESEL": {"e":5155,"end":"RUA CORDEIROS, 1465"},
+  "EE. PROF. HERNANI FURINI": {"e":5415,"end":"AV. BOM JESUS, S/N"},
+  "EE. PROFA. SALIME MUDEH": {"e":6102,"end":"AVENIDA SAGRES, 136"},
+  "EE. SANDI MIYAKE CAPITAO AVIADOR": {"e":4361,"end":"AV. JUAREZ TÁVORA, 47"},
+  "EE. CIDADE SERODIO": {"e":1446,"end":"AVENIDA JOSÉ BRUMATTI, S/N"},
+  "EE. JARDIM FORTALEZA II": {"e":6138,"end":"RUA ROBERTO MAGALHÃES, 507"},
+  "EE. ANA MARIA HOPPNER GOMES": {"e":0,"end":"RUA TAUBATÉ, 180"},
+  "EE. IDALINA LADEIRA FERREIRA": {"e":5287,"end":"RUA BARRA DA ESTIVA, 101"},
+  "EE. OSWALDO SAMPAIO ALVES": {"e":3213,"end":"RUA OURICURI, 168"},
+  "EE. COMANDANTE JOAO RIBEIRO DE BARROS": {"e":5258,"end":"RUA JUAZEIRO DO NORTE, S/N"},
+  "EE. HUGO DE AGUIAR": {"e":6606,"end":"AV. JOSÉ MIGUEL ACKEL, 385"},
+  "EE. JARDIM NOVA CUMBICA DOIS": {"e":5588,"end":"RUA JAGUARIBI, S/N"},
+  "EE. JOO DE ALMEIDA BARBOSA": {"e":3091,"end":"AV. NOVA CUMBICA, S/N"},
+  "EE. PADRE BRUNO RICCO": {"e":7090,"end":"AV. RIO REAL, 379"},
+  "EE. PADRE VALENTIM GONZALES ALONSO": {"e":5959,"end":"RUA MISSAO VELHA, 001"},
+  "EE. PREFEITO ANTONIO PRATICI": {"e":4757,"end":"RUA CARLOS DRUMOND DE ANDRADE, 372"},
+  "EE. PROF JOAO CAVALHEIRO SALEM": {"e":6228,"end":"RUA PORTO VELHO, 624"},
+  "EE. SEBASTIAO WALTER FUSCO": {"e":5600,"end":"AV. JAIME REGALO PEREIRA, 45"},
+  "EE. VICTOR CIVITA": {"e":2655,"end":"RUA REGIANE, S/N"},
+  "EE. INOCOOP II": {"e":3832,"end":"RUA ELIAS DABARIAN, 477"},
+  "EE. JARDIM MARIA DIRCE 3": {"e":4066,"end":"RUA TREZE DE JULHO, 52"},
+  "EE. PROFA ZILDA ROMEIRO P.M. DA SILVA": {"e":9713,"end":"RUA MACARANI, 382"},
+  "EE. PROFA CACILDA CACAPAVA DE OLIVEIRA": {"e":4242,"end":"RUA AMÉLIA RODRIGUES, S/N"},
+  "EM. ANISIO TEIXEIRA": {"e":4356,"end":"RUA DOM SILVÉRIO, 21"},
+  "EPG. JORGE AMADO": {"e":1988,"end":"RUA JOÃO BASSI, S/N"},
+  "EPG. PERSEU ABRAMO": {"e":2909,"end":"RUA ITAPARANTIM, S/N"},
+  "EPG. NISE DA SILVEIRA": {"e":3075,"end":"RUA MUCAMBO S/N"},
+  "EPG. MARIAZINHA RESENDE FUSARI": {"e":1599,"end":"RUA ITAPARATIM, 1321"},
+  "EPG. VER. CARLOS FRANCHIN": {"e":2953,"end":"AV. ATALAIA DO NORTE, 544"},
+  "EPG. ZELIA GATAI": {"e":1605,"end":"RUA JOÃO BASSI, S/N"}
+};
+
+const ZONA_CORES = {
+  176: {bg:'#3a86ff', border:'#1a5fbf', text:'#fff'},
+  185: {bg:'#8b5cf6', border:'#6d28d9', text:'#fff'},
+  278: {bg:'#00b894', border:'#00896e', text:'#fff'},
+  279: {bg:'#e67e22', border:'#c0392b', text:'#fff'},
+  393: {bg:'#e74c3c', border:'#c0392b', text:'#fff'},
+  394: {bg:'#e91e8c', border:'#b5156c', text:'#fff'},
+  395: {bg:'#00b4d8', border:'#0096b7', text:'#fff'},
+};
+function getZonaCor(zona) {
+  return ZONA_CORES[Number(zona)] || {bg:'#6b7280', border:'#4b5563', text:'#fff'};
+}
+
 // Controle de camadas
 let activeLayers = {escolas: true, lideres: true, eleitores: true};
 
@@ -1064,14 +1215,16 @@ function toggleLayer(el) {
   refreshMarkers();
 }
 
-function getEscolaIcon(total, liders) {
-  const size = Math.min(30 + Math.sqrt(total) * 2.5, 54);
+function getEscolaIcon(total, liders, treTotal, zona) {
+  const displayNum = treTotal > 0 ? treTotal : total;
+  const size = Math.min(30 + Math.sqrt(displayNum) * 1.2, 58);
   const s = Math.round(size);
   const hasLider = liders > 0;
-  const bg = hasLider ? '#f5c518' : '#3a86ff';
-  const border = hasLider ? '#b8860b' : '#1a5fbf';
-  const tc = hasLider ? '#000' : '#fff';
-  const html = `<div style="width:${s}px;height:${s}px;border-radius:50%;background:${bg};border:3px solid ${border};display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,0.45);font-family:sans-serif;font-weight:800;color:${tc};font-size:${s>42?13:10}px;line-height:1.1;cursor:pointer"><span>${total}</span>${hasLider?`<span style="font-size:8px">⭐${liders}</span>`:''}</div>`;
+  const cor = getZonaCor(zona);
+  const bg = hasLider ? '#f5c518' : cor.bg;
+  const border = hasLider ? '#b8860b' : cor.border;
+  const tc = hasLider ? '#000' : cor.text;
+  const html = `<div style="width:${s}px;height:${s}px;border-radius:50%;background:${bg};border:3px solid ${border};display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,0.45);font-family:sans-serif;font-weight:800;color:${tc};font-size:${s>42?12:9}px;line-height:1.1;cursor:pointer"><span>${treTotal>0?treTotal.toLocaleString('pt-BR'):total}</span>${total>0?`<span style="font-size:8px">📋${total}</span>`:''}</div>`;
   return L.divIcon({html,className:'',iconSize:[s,s],iconAnchor:[s/2,s/2],popupAnchor:[0,-(s/2+4)]});
 }
 
@@ -1109,17 +1262,34 @@ function refreshMarkers() {
       const coords = getCoords(def.b);
       if(!coords) return;
       const eleitores = info.total - info.liders;
-      const popupHtml = `<div style="font-family:sans-serif;min-width:210px;max-width:260px">
+      const treInfo = TRE_DATA[nome] || {};
+      const treTotal = treInfo.e || 0;
+      const treEnd = treInfo.end || '';
+      const cadastEleitores = info.total - info.liders;
+      const popupHtml = `<div style="font-family:sans-serif;min-width:220px;max-width:270px">
         <b style="font-size:13px">🏫 ${nome}</b><br>
-        <span style="color:#888;font-size:11px">Zona ${def.z} · ${def.b}</span><br><br>
-        <div style="display:flex;gap:16px;margin-bottom:8px">
-          <div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#3a86ff">${info.total}</div><div style="font-size:10px;color:#666">total</div></div>
-          <div style="font-size:12px;line-height:1.8"><span style="color:#b8860b">⭐ ${info.liders} liderança${info.liders!==1?'s':''}</span><br><span style="color:#007a38">👤 ${eleitores} eleitor${eleitores!==1?'es':''}</span></div>
+        <span style="color:#888;font-size:11px">Zona ${def.z} · ${def.b}</span>
+        ${treEnd?`<br><span style="color:#aaa;font-size:10px">📍 ${treEnd}</span>`:''}
+        <br><br>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div style="background:#f0f7ff;border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:22px;font-weight:800;color:#3a86ff">${treTotal>0?treTotal.toLocaleString('pt-BR'):'–'}</div>
+            <div style="font-size:10px;color:#666">eleitores TRE</div>
+          </div>
+          <div style="background:#fff8f0;border-radius:8px;padding:8px;text-align:center">
+            <div style="font-size:22px;font-weight:800;color:#e67e22">${info.total}</div>
+            <div style="font-size:10px;color:#666">cadastrados</div>
+          </div>
         </div>
-        ${info.lista.slice(0,5).map(v=>`<div style="font-size:11px;padding:2px 0;border-top:1px solid #eee">${v.tipo==='lider'?'⭐':'👤'} ${v.nome}</div>`).join('')}
-        ${info.lista.length>5?`<div style="font-size:10px;color:#aaa;margin-top:3px">+${info.lista.length-5} mais...</div>`:''}
+        <div style="font-size:12px;line-height:1.8">
+          <span style="color:#b8860b">⭐ ${info.liders} liderança${info.liders!==1?'s':''}</span><br>
+          <span style="color:#007a38">👤 ${cadastEleitores} eleitor${cadastEleitores!==1?'es':''}</span>
+          ${treTotal>0?`<br><span style="color:#aaa;font-size:10px">penetração: ${((info.total/treTotal)*100).toFixed(1)}%</span>`:''}
+        </div>
+        ${info.lista.slice(0,4).map(v=>`<div style="font-size:11px;padding:3px 0;border-top:1px solid #eee;margin-top:6px">${v.tipo==='lider'?'⭐':'👤'} ${v.nome}</div>`).join('')}
+        ${info.lista.length>4?`<div style="font-size:10px;color:#aaa;margin-top:3px">+${info.lista.length-4} mais...</div>`:''}
       </div>`;
-      const m = L.marker([coords.lat,coords.lng],{icon:getEscolaIcon(info.total,info.liders)}).addTo(leafMap).bindPopup(popupHtml);
+      const m = L.marker([coords.lat,coords.lng],{icon:getEscolaIcon(info.total,info.liders,treInfo.e||0,def.z)}).addTo(leafMap).bindPopup(popupHtml);
       mapMarkers.push(m);
     });
   }
@@ -1132,7 +1302,12 @@ function refreshMarkers() {
       if(!c) return;
       const pos=[c.lat+(Math.random()-0.5)*0.002,c.lng+(Math.random()-0.5)*0.002];
       const popup=`<div style="font-family:sans-serif;min-width:180px"><b>${v.nome}</b><br><span style="color:#b8860b;font-weight:600">⭐ Liderança</span><br><br>📍 Zona ${v.zona||'?'} · §${v.secao||'?'}<br>📞 ${v.telefone||'–'}<br>🏫 ${v.escola||'–'}<br>${v.endereco?'🏠 '+v.endereco+'<br>':''}👤 ${getUName(v.assessor_id)}</div>`;
-      mapMarkers.push(L.marker(pos,{icon:getLeaderIcon(),zIndexOffset:1000}).addTo(leafMap).bindPopup(popup));
+      const liderIcon = (()=>{
+      const cor = getZonaCor(v.zona);
+      const s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="#f5c518" stroke="'+cor.border+'" stroke-width="1.8"/></svg>';
+      return L.divIcon({html:s,className:'',iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-14]});
+    })();
+    mapMarkers.push(L.marker(pos,{icon:liderIcon,zIndexOffset:1000}).addTo(leafMap).bindPopup(popup));
     });
   }
 
@@ -1144,7 +1319,8 @@ function refreshMarkers() {
       if(!c) return;
       const pos=[c.lat+(Math.random()-0.5)*0.002,c.lng+(Math.random()-0.5)*0.002];
       const popup=`<div style="font-family:sans-serif;min-width:180px"><b>${v.nome}</b><br><span style="color:#007a38;font-weight:600">Eleitor</span><br><br>📍 Zona ${v.zona||'?'} · §${v.secao||'?'}<br>📞 ${v.telefone||'–'}<br>🏫 ${v.escola||'–'}<br>${v.endereco?'🏠 '+v.endereco+'<br>':''}👤 ${getUName(v.assessor_id)}</div>`;
-      mapMarkers.push(L.circleMarker(pos,{radius:7,fillColor:'#00c45a',color:'#fff',weight:2,opacity:1,fillOpacity:0.9}).addTo(leafMap).bindPopup(popup));
+      const corEleitor = getZonaCor(v.zona);
+    mapMarkers.push(L.circleMarker(pos,{radius:7,fillColor:corEleitor.bg,color:'#fff',weight:2,opacity:1,fillOpacity:0.9}).addTo(leafMap).bindPopup(popup));
     });
   }
 
