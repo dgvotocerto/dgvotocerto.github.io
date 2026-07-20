@@ -1416,13 +1416,17 @@ function getRelatorioData() {
 
 function previewRelatorio() {
   const list = getRelatorioData();
-  document.getElementById('r-preview-count').textContent = `${list.length} registro${list.length!==1?'s':''} encontrado${list.length!==1?'s':''}`;
-  const el = document.getElementById('rel-preview');
-  if(!list.length) { el.innerHTML='<div class="empty" style="padding:20px"><div class="empty-icon" style="font-size:28px">🔍</div><p>Nenhum resultado</p></div>'; return; }
-  el.innerHTML = list.slice(0,50).map((v,i)=>{
+  const wrap = document.getElementById('rel-preview-wrap');
+  const label = document.getElementById('rel-preview-label');
+  const tbody = document.getElementById('rel-tbody');
+  if(wrap) wrap.style.display = list.length ? 'block' : 'none';
+  if(label) label.textContent = `${list.length} registro${list.length!==1?'s':''} encontrado${list.length!==1?'s':''}`;
+  if(!tbody) return;
+  if(!list.length) { tbody.innerHTML='<tr><td colspan=7 style="text-align:center;color:var(--text2);padding:20px">Nenhum resultado</td></tr>'; return; }
+  tbody.innerHTML = list.slice(0,50).map(v=>{
     const bVota = getBairroVota(v);
-    return `<div class="rel-row"><span class="rel-num">${i+1}</span><div style="flex:1"><div class="rel-name">${v.nome}</div><div class="rel-detail">Z.${v.zona||'–'} · ${bVota||'–'} · ${v.telefone||'–'} · ${getUName(v.assessor_id)}</div></div><span class="rel-badge ${v.tipo==='lider'?'vt-lider':'vt-eleitor'}">${v.tipo==='lider'?'⭐ L':'E'}</span></div>`;
-  }).join('') + (list.length>50?`<div style="text-align:center;padding:12px;font-size:12px;color:var(--text2)">... e mais ${list.length-50} registros (exportar para ver todos)</div>`:'');
+    return `<tr><td>${v.nome}</td><td><span class="vtype ${v.tipo==='lider'?'vt-lider':'vt-eleitor'}" style="font-size:10px">${v.tipo==='lider'?'⭐ Liderança':'Eleitor'}</span></td><td>${v.telefone||'–'}</td><td>${v.zona||'–'}</td><td>${v.secao||'–'}</td><td>${bVota||'–'}</td><td>${getUName(v.assessor_id)}</td></tr>`;
+  }).join('') + (list.length>50?`<tr><td colspan=7 style="text-align:center;font-size:11px;color:var(--text2)">... e mais ${list.length-50} registros</td></tr>`:'');
 }
 
 function limparFiltrosRelatorio() {
@@ -1434,8 +1438,8 @@ function buildRelatorioLabel() {
   const fTipo  = document.getElementById('rf-tipo').value;
   const fAss   = document.getElementById('rf-assessor')?.value || '';
   const fZona  = document.getElementById('rf-zona').value;
-  const fBVota = document.getElementById('r-bairro-vota').value;
-  const fBRes  = document.getElementById('r-bairro-res')?.value||'';
+  const fBVota = document.getElementById('rf-bairro-vota').value;
+  const fBRes  = document.getElementById('rf-bairro-res')?.value||'';
   const parts = [];
   if(fTipo)  parts.push(fTipo==='lider'?'Lideranças':'Eleitores');
   if(fAss)   parts.push('Assessor: '+getUName(fAss));
