@@ -354,6 +354,22 @@ html, body { height: 100%; font-family: 'Sora', sans-serif; background: var(--bg
 .rel-table tr:last-child td { border-bottom: none; }
 .rel-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
 
+.escola-tooltip {
+  background: #fff;
+  border: 1px solid #dde1e7;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-family: 'Sora', sans-serif;
+  font-size: 12px;
+  color: #1a1f2e;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  white-space: nowrap;
+  max-width: 260px;
+  white-space: normal;
+}
+.escola-tooltip::before { display: none; }
+.leaflet-tooltip-top.escola-tooltip::before { display: block; }
+
 @media(max-width:480px) { .form-grid{grid-template-columns:1fr} .dl-grid{grid-template-columns:1fr 1fr} .rel-filters{grid-template-columns:1fr} .map-filters{grid-template-columns:1fr} }
 </style>
 </head>
@@ -1039,7 +1055,8 @@ function populateMapAssessorFilter() {
 }
 
 function populateMapZonaFilter() {
-  const zonas = [...new Set(VOTERS.map(v=>v.zona).filter(Boolean))].sort((a,b)=>Number(a)-Number(b));
+  // Use all zones from ESCOLAS (TRE data), not just from cadastrados
+  const zonas = [...new Set(ESCOLAS.map(e=>String(e.z)).filter(Boolean))].sort((a,b)=>Number(a)-Number(b));
   const sel = document.getElementById('mf-zona');
   const cur = sel.value;
   sel.innerHTML = '<option value="">Todas as zonas</option>' + zonas.map(z=>`<option value="${z}" ${z===cur?'selected':''}>${z}</option>`).join('');
@@ -1215,7 +1232,35 @@ function toggleLayer(el) {
   refreshMarkers();
 }
 
-function getEscolaIcon(total, liders, treTotal, zona) {
+
+function getSigla(nome) {
+  // Remove common prefixes
+  let s = nome
+    .replace(/^E\.E\.\s*/i, '')
+    .replace(/^E\.P\.G\.?\s*/i, '')
+    .replace(/^EPG\.?\s*/i, '')
+    .replace(/^EE\.?\s*/i, '')
+    .replace(/^EM\.?\s*/i, '')
+    .replace(/^COLGIO\s*/i, '')
+    .replace(/^COLEGIO\s*/i, '')
+    .replace(/^ESCOLA\s*/i, '')
+    .replace(/^INSTITUTO\s*/i, '')
+    .replace(/^UNIVERSIDADE\s*/i, '')
+    .replace(/^SERVIO SOCIAL DA INDSTRIA\s*/i, '')
+    .replace(/^PROF\.?\s*/i, '')
+    .replace(/^PROFA\.?\s*/i, '')
+    .replace(/^PROFESSOR\s*/i, '')
+    .replace(/^PROFESSORA\s*/i, '')
+    .trim();
+  // Take first letters of each word (max 4 chars)
+  const words = s.split(/\s+/).filter(w => w.length > 2 && !/^(DE|DA|DO|DAS|DOS|E|A|O)$/i.test(w));
+  if(words.length === 0) return nome.slice(0,4).toUpperCase();
+  if(words.length === 1) return words[0].slice(0,5).toUpperCase();
+  if(words.length === 2) return (words[0].slice(0,3) + words[1].slice(0,2)).toUpperCase();
+  return words.slice(0,3).map(w=>w[0]).join('').toUpperCase();
+}
+
+function getEscolaIcon(total, liders, treTotal, zona, sigla) {
   const displayNum = treTotal > 0 ? treTotal : total;
   const size = Math.min(30 + Math.sqrt(displayNum) * 1.2, 58);
   const s = Math.round(size);
@@ -1224,7 +1269,7 @@ function getEscolaIcon(total, liders, treTotal, zona) {
   const bg = hasLider ? '#f5c518' : cor.bg;
   const border = hasLider ? '#b8860b' : cor.border;
   const tc = hasLider ? '#000' : cor.text;
-  const html = `<div style="width:${s}px;height:${s}px;border-radius:50%;background:${bg};border:3px solid ${border};display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,0.45);font-family:sans-serif;font-weight:800;color:${tc};font-size:${s>42?12:9}px;line-height:1.1;cursor:pointer"><span>${treTotal>0?treTotal.toLocaleString('pt-BR'):total}</span>${total>0?`<span style="font-size:8px">📋${total}</span>`:''}</div>`;
+  const html = `<div style="width:${s}px;height:${s}px;border-radius:50%;background:${bg};border:3px solid ${border};display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,0.45);font-family:sans-serif;font-weight:800;color:${tc};font-size:${s>44?11:9}px;line-height:1.2;cursor:pointer;text-align:center;padding:2px"><span style="letter-spacing:0.5px">${sigla}</span>${total>0?`<span style="font-size:7px;opacity:0.85;font-weight:600">📋${total}</span>`:''}</div>`;
   return L.divIcon({html,className:'',iconSize:[s,s],iconAnchor:[s/2,s/2],popupAnchor:[0,-(s/2+4)]});
 }
 
@@ -1238,7 +1283,7 @@ function refreshMarkers() {
 
   let voters = [...VOTERS];
   if(fAss)  voters = voters.filter(v=>v.assessor_id===fAss);
-  if(fZona) voters = voters.filter(v=>(v.zona||'')===fZona);
+  if(fZona) voters = voters.filter(v=>String(v.zona||'')===String(fZona));
 
   // CAMADA ESCOLAS
   if(activeLayers.escolas) {
@@ -1252,7 +1297,7 @@ function refreshMarkers() {
     });
     // inclui todas as escolas (mesmo sem cadastros)
     ESCOLAS.forEach(e => {
-      if(fZona && String(e.z)!==fZona) return;
+      if(fZona && String(e.z)!==String(fZona)) return;
       if(!escolaStats[e.n]) escolaStats[e.n] = {total:0,liders:0,lista:[],def:e};
       else escolaStats[e.n].def = e;
     });
@@ -1289,7 +1334,13 @@ function refreshMarkers() {
         ${info.lista.slice(0,4).map(v=>`<div style="font-size:11px;padding:3px 0;border-top:1px solid #eee;margin-top:6px">${v.tipo==='lider'?'⭐':'👤'} ${v.nome}</div>`).join('')}
         ${info.lista.length>4?`<div style="font-size:10px;color:#aaa;margin-top:3px">+${info.lista.length-4} mais...</div>`:''}
       </div>`;
-      const m = L.marker([coords.lat,coords.lng],{icon:getEscolaIcon(info.total,info.liders,treInfo.e||0,def.z)}).addTo(leafMap).bindPopup(popupHtml);
+      const sigla = getSigla(nome);
+      const icon = getEscolaIcon(info.total,info.liders,treInfo.e||0,def.z,sigla);
+      const treStr = treInfo.e ? treInfo.e.toLocaleString('pt-BR')+' eleitores TRE' : '';
+      const tooltipContent = '<b>'+nome+'</b>'+(treStr?'<br><span style="color:#666;font-size:11px">Zona '+def.z+' · '+treStr+'</span>':'');
+      const m = L.marker([coords.lat,coords.lng],{icon}).addTo(leafMap)
+        .bindPopup(popupHtml)
+        .bindTooltip(tooltipContent, {direction:'top', offset:[0,-20], className:'escola-tooltip'});
       mapMarkers.push(m);
     });
   }
@@ -1327,7 +1378,7 @@ function refreshMarkers() {
   const countEl = document.getElementById('map-counter');
   if(countEl) {
     const parts = [];
-    if(activeLayers.escolas) { const n=ESCOLAS.filter(e=>!fZona||String(e.z)===fZona).length; parts.push(`🏫 ${n} escolas`); }
+    if(activeLayers.escolas) { const n=ESCOLAS.filter(e=>!fZona||String(e.z)===String(fZona)).length; parts.push(`🏫 ${n} escolas`); }
     if(activeLayers.lideres) parts.push(`⭐ ${voters.filter(v=>v.tipo==='lider').length} lideranças`);
     if(activeLayers.eleitores) parts.push(`👤 ${voters.filter(v=>v.tipo==='eleitor').length} eleitores`);
     countEl.textContent = parts.join(' · ');
