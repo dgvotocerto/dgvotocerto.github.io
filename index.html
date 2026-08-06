@@ -1030,12 +1030,42 @@ function openDetail(id) {
 
 // ===== AUTOCOMPLETE DE ESCOLA =====
 // Não limpa mais zona/seção a cada tecla — só a escolha na lista sobrescreve.
+// Os nomes vindos do TRE perderam as letras acentuadas (COLEGIO virou COLGIO,
+// JOAO virou JOO). Por isso a busca não pode ser literal.
+function normTxt(s) {
+  return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toUpperCase().replace(/[^A-Z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+}
+// a é subsequência de b? (b tem as letras de a, na ordem, podendo ter extras)
+function isSub(a,b) {
+  let i=0;
+  for(const c of b){ if(c===a[i]) i++; if(i===a.length) return true; }
+  return false;
+}
+function wordMatch(q,w) {
+  if(q.length<3 || w.length<3) return q===w;
+  if(w.includes(q)) return true;
+  // o nome do TRE perdeu letras em relação ao que a pessoa digitou
+  if(q.length>=4 && w.length>=3 && w.length>=q.length-3 && isSub(w,q)) return true;
+  return false;
+}
+function escolaMatch(query,e) {
+  const qs = normTxt(query).split(' ').filter(Boolean);
+  if(!qs.length) return false;
+  const ws = (normTxt(e.n)+' '+normTxt(e.b)).split(' ').filter(Boolean);
+  return qs.every(q=>ws.some(w=>wordMatch(q,w)));
+}
+
 function acEscola(inp) {
-  const q = inp.value.toLowerCase();
+  const q = inp.value;
   const list = document.getElementById('ac-list');
-  if(q.length < 2) { list.style.display='none'; return; }
-  const m = ESCOLAS.filter(e=>e.n.toLowerCase().includes(q)).slice(0,8);
-  if(!m.length) { list.style.display='none'; return; }
+  if(normTxt(q).length < 2) { list.style.display='none'; return; }
+  const m = ESCOLAS.filter(e=>escolaMatch(q,e)).slice(0,12);
+  if(!m.length) {
+    list.innerHTML = '<div class="ac-item" style="cursor:default"><div class="ac-main" style="color:var(--text2)">Nenhum colégio encontrado</div><div class="ac-sub">Digite a zona e a seção manualmente abaixo</div></div>';
+    list.style.display = 'block';
+    return;
+  }
   list.innerHTML = m.map(e=>`<div class="ac-item" onclick="pickEscola(${JSON.stringify(e.n)})">
     <div class="ac-main">${e.n}</div>
     <div class="ac-sub">Zona ${e.z} · ${e.b}</div>
