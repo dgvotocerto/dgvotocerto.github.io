@@ -610,7 +610,7 @@ html, body { height: 100%; font-family: 'Sora', sans-serif; background: var(--bg
     <div class="modal-title" id="mv-title">Novo Eleitor</div>
     <div class="form-grid">
       <div class="fg span2"><label>Nome completo <span class="req">*</span></label><input id="v-nome" type="text" placeholder="Nome completo"></div>
-      <div class="fg"><label>CPF <span class="req">*</span></label><input id="v-cpf" type="text" placeholder="000.000.000-00" maxlength="14" oninput="mCPF(this)"></div>
+      <div class="fg"><label>CPF</label><input id="v-cpf" type="text" placeholder="Opcional" maxlength="14" oninput="mCPF(this)"></div>
       <div class="fg"><label>Telefone <span class="req">*</span></label><input id="v-tel" type="tel" placeholder="(11) 99999-9999" maxlength="15" oninput="mTel(this)"></div>
       <div class="fg"><label>E-mail</label><input id="v-email" type="email" placeholder="email@exemplo.com"></div>
       <div class="fg"><label>Título eleitoral <span class="req">*</span></label><input id="v-titulo" type="text" placeholder="Número do título"></div>
@@ -949,12 +949,12 @@ async function saveVoter() {
   const cpf    = document.getElementById('v-cpf').value.trim();
   const tel    = document.getElementById('v-tel').value.trim();
   const titulo = document.getElementById('v-titulo').value.trim();
-  if(!nome||!cpf||!tel||!titulo) { toast('Preencha todos os campos obrigatórios (*)','err'); return; }
+  if(!nome||!tel||!titulo) { toast('Preencha todos os campos obrigatórios (*)','err'); return; }
   if(!CU||!CU.id) { toast('Sessão expirada. Entre novamente.','err'); return; }
   const btn = document.getElementById('mv-save-btn');
   btn.innerHTML = '<span class="spin"></span> Salvando...'; btn.disabled = true;
   const payload = {
-    nome, cpf, telefone: tel,
+    nome, cpf: cpf || null, telefone: tel,
     email: document.getElementById('v-email').value.trim(),
     titulo,
     tipo: document.getElementById('v-tipo').value,
@@ -983,7 +983,7 @@ async function saveVoter() {
     if(mapInited) refreshMarkers();
   } catch(e) {
     console.error(e);
-    if(e.code==='23505')      toast('CPF já cadastrado!','err');
+    if(e.code==='23505')      toast('CPF ou Título de Eleitor já cadastrado!','err');
     else if(e.code==='23503') toast('Seu usuário não está mais válido no banco. Saia e entre novamente.','err');
     else                      toast('Erro ao salvar: '+(e.message||'desconhecido'),'err');
   } finally {
