@@ -730,6 +730,20 @@ function doLogout() {
   document.getElementById('li-pass').value='';
 }
 
+// Derruba a sessão sem pedir confirmação (usado quando o usuário
+// não existe mais no banco) e explica o motivo na tela de login.
+function sessaoInvalida(msg) {
+  CU=null; VOTERS=[]; USERS=[];
+  document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open'));
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('li-user').value='';
+  document.getElementById('li-pass').value='';
+  const err = document.getElementById('li-err');
+  err.textContent = '⚠️ ' + (msg || 'Sua sessão expirou. Entre novamente.');
+  err.style.display = 'block';
+}
+
 // ===== INIT =====
 async function initApp() {
   const ini=CU.nome.split(' ').map(x=>x[0]).slice(0,2).join('');
@@ -984,7 +998,7 @@ async function saveVoter() {
   } catch(e) {
     console.error(e);
     if(e.code==='23505')      toast('CPF ou Título de Eleitor já cadastrado!','err');
-    else if(e.code==='23503') toast('Seu usuário não está mais válido no banco. Saia e entre novamente.','err');
+    else if(e.code==='23503') { btn.innerHTML='💾 Salvar'; btn.disabled=false; sessaoInvalida('Seu cadastro de assessor não está mais ativo. Entre novamente ou fale com o administrador.'); return; }
     else                      toast('Erro ao salvar: '+(e.message||'desconhecido'),'err');
   } finally {
     btn.innerHTML = '💾 Salvar'; btn.disabled = false;
@@ -1510,7 +1524,12 @@ async function addUser() {
 }
 
 async function removeUser(id) {
-  if(!confirm('Remover este assessor? Os eleitores cadastrados por ele serão mantidos.')) return;
+  const u = USERS.find(x=>x.id===id);
+  const cnt = VOTERS.filter(v=>v.assessor_id===id).length;
+  let aviso = 'Remover o assessor '+(u?u.nome:'')+'?\n\nEle perde o acesso imediatamente.';
+  if(cnt) aviso += '\nOs '+cnt+' eleitores cadastrados por ele continuam no banco, mas deixam de mostrar o nome do assessor nos relatórios.';
+  aviso += '\n\nSe a ideia é só bloquear o acesso, prefira trocar a senha dele.';
+  if(!confirm(aviso)) return;
   const { error } = await sb.from('usuarios').delete().eq('id', id);
   if(error) { toast('Erro ao remover','err'); return; }
   USERS=USERS.filter(u=>u.id!==id); renderUM(); renderDashboard(); populateMapAssessorFilter();
